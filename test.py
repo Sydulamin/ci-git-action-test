@@ -1,6 +1,6 @@
-""" 
-This module calculates the factorial of a number 
+"""
+This module calculates the factorial of a number
 based on user input.
 """
 
-print('Hello world')
+print("Hello world")
