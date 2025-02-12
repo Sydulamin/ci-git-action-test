@@ -3,14 +3,14 @@ FROM python:3.10-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies in one layer
+# Install dependencies in one layer (without strict version pinning)
 RUN apk update && apk add --no-cache \
-    curl=7.78.0-r0 \
-    wget=1.20.3-r0 \
-    ca-certificates=20210119-r0 && \
+    curl \
+    wget \
+    ca-certificates && \
     rm -rf /var/cache/apk/*
 
-# Install hadolint in one layer
+# Install hadolint
 RUN wget -qO- https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64 -O /usr/local/bin/hadolint && \
     chmod +x /usr/local/bin/hadolint
 
