@@ -3,11 +3,15 @@ FROM python:3.10-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies in one layer (without strict version pinning)
+# Install build dependencies
 RUN apk update && apk add --no-cache \
     curl \
     wget \
-    ca-certificates && \
+    ca-certificates \
+    gcc \
+    python3-dev \
+    musl-dev \
+    linux-headers && \
     rm -rf /var/cache/apk/*
 
 # Install hadolint
