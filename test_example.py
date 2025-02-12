@@ -1,8 +1,9 @@
-# test_example.py
+""" test_example.py"""
 import os
 
 
 def test_example():
+    """ adding function"""
     assert 1 + 1 == 2
 
 
