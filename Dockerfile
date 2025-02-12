@@ -11,7 +11,7 @@ RUN wget https://curl.se/download/curl-7.68.0.tar.gz && \
     cd wget-1.20.3 && \
     ./configure && make && make install
 
-RUN wget --progress=dot:giga https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64 -O /usr/local/bin/hadolint && \
+RUN wget -qO- https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64 -O /usr/local/bin/hadolint && \
     chmod +x /usr/local/bin/hadolint
 
 COPY requirements.txt .
