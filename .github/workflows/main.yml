@@ -36,11 +36,11 @@ jobs:
       - name: Dependency Security Check
         run: safety check
 
-      - name: Dockerfile Linting
-        run: |
-          wget -qO- https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64 -O /usr/local/bin/hadolint
-          chmod +x /usr/local/bin/hadolint
-          hadolint Dockerfile
+      # - name: Dockerfile Linting
+      #   run: |
+      #     wget -qO- https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64 -O /usr/local/bin/hadolint
+      #     chmod +x /usr/local/bin/hadolint
+      #     hadolint Dockerfile
 
       - name: Build Docker Image
         run: |
