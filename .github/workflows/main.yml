@@ -48,4 +48,4 @@ jobs:
 
       - name: Verify Docker Image
         run: |
-          docker run --rm my-slim-image:latest uvicorn --help
+          docker run --rm my-slim-image:latest --help
