@@ -4,11 +4,11 @@ services:
   test-runner:
     build:
       context: .
-    entrypoint: ["flack8"]
-
+    entrypoint: ["flake8", "."]
+    
   fastapi:
     build:
-      context: .
+      context: .  # Change to `app` if `Dockerfile` is inside `app/`
       dockerfile: Dockerfile
     container_name: fastapi-app
     ports:
@@ -16,18 +16,19 @@ services:
     environment:
       - DATABASE_URL=your-database-url
     volumes:
-      - .:/app
+      - ./app:/app
     networks:
       - app-network
 
   celery:
     build:
-      context: .
+      context: .  # Change to `app` if `Dockerfile` is inside `app/`
       dockerfile: Dockerfile
     container_name: celery-worker
-    command: celery -A your_project_name.celery worker --loglevel=info
+    command: celery -A app.celery worker --loglevel=info
     environment:
       - DATABASE_URL=your-database-url
+      - CELERY_BROKER_URL=redis://redis:6379/0
     networks:
       - app-network
 
@@ -36,7 +37,12 @@ services:
     container_name: redis
     networks:
       - app-network
+    volumes:
+      - redis_data:/data
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  redis_data:
