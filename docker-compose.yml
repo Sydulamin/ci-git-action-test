@@ -1,6 +1,11 @@
 version: '3.8'
 
 services:
+  test-runner:
+    build:
+      context: fastapi
+    entrypoint: ["flack8"]
+
   fastapi:
     build:
       context: .
