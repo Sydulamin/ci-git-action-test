@@ -1,0 +1,33 @@
+
+services:
+  test-runner:
+    build:
+      context: .
+    entrypoint: ["flake8", "."]
+    
+  fastapi:
+    image: sydulamin/test-python-app:${COMMIT_HASH}
+
+    ports:
+      - "8000:8000"
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+    volumes:
+      - ./app:/app
+    restart: on-failure:10
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      start_period: 2s
+    networks:
+      - app-network
+
+
+
+networks:
+  app-network:
+    driver: bridge
