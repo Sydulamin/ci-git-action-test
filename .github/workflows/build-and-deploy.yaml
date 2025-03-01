@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  
   DOCKERHUB_REPOSITORY_NAME: test-python-app
   DEPLOYMENT_SERVER_IP: ${{ secrets.INSTANCE_IP }}
 
@@ -15,20 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        name: Checkout code
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ env.DOCKER_USERNAME }}
+          username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+        
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/my-image
           tags: type=sha,prefix=,suffix=
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .  
@@ -40,6 +45,8 @@ jobs:
     needs: build-and-push
     steps:
       - uses: actions/checkout@v4
+        name: Checkout code
+
       - name: Transfer Docker compose file to VM
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -48,7 +55,8 @@ jobs:
           key: ${{ secrets.INSTANCE_RSA_PRIVATE_KEY }}
           source: "docker-compose.production.yaml"
           target: "~/"
-      - name: Deploy my api project using docker compose   
+
+      - name: Deploy application using Docker Compose
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ env.DEPLOYMENT_SERVER_IP }}
@@ -56,5 +64,4 @@ jobs:
           key: ${{ secrets.INSTANCE_RSA_PRIVATE_KEY }}
           script: |
             export COMMIT_HASH=$(echo ${{ github.sha }} | cut -c1-7)
-            docker compose up -f ~/docker-compose.production.yaml -d
-
+            docker compose -f ~/docker-compose.production.yaml up -d
