@@ -1,7 +1,7 @@
 
 services:
   fastapi:
-    image: sydulamin/test-python-app:${COMMIT_HASH:-latest}
+    image: sydulamin/test-python-app:51e4416
     deploy:
       replicas: 2
       update_config:
