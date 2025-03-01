@@ -61,7 +61,10 @@ jobs:
         with:
           host: ${{ env.DEPLOYMENT_SERVER_IP }}
           username: ubuntu
-          key: ${{ secrets.INSTANCE_RSA_PRIVATE_KEY }}
+          key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            [your-private-key-content]
+            -----END OPENSSH PRIVATE KEY-----
           script: |
             export COMMIT_HASH=$(echo ${{ github.sha }} | cut -c1-7)
             docker compose -f ~/docker-compose.production.yaml up -d
