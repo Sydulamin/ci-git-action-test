@@ -38,7 +38,8 @@ jobs:
         with:
           context: .  
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/test-python-app:${{ github.sha }}
+
 
   deploy:
     runs-on: ubuntu-latest
