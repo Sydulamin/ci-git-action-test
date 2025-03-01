@@ -1,50 +1,60 @@
-name: Docker CI/CD
+name: Build and Deploy
 description: Docker CI/CD pipeline for building and deploying Docker images to Docker Hub
 on:
   push:
     branches:
-      - "main"
+      - main
 
 env:
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKERHUB_REPOSITORY_NAME: test-python-app
+  DEPLOYMENT_SERVER_IP: ${{ secrets.INSTANCE_IP }}
 
 jobs:
-    build-and-push:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
-              with:
-                fetch-depth: 0  # Ensure all files are fetched
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/my-image
+          tags: type=sha,prefix=,suffix=
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .  
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
 
-            - name: Debug file structure
-              run: ls -R  # Print files and folders
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - uses: actions/checkout@v4
+      - name: Transfer Docker compose file to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.DEPLOYMENT_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.INSTANCE_RSA_PRIVATE_KEY }}
+          source: "docker-compose.production.yaml"
+          target: "~/"
+      - name: Deploy my api project using docker compose   
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ env.DEPLOYMENT_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.INSTANCE_RSA_PRIVATE_KEY }}
+          script: |
+            export COMMIT_HASH=$(echo ${{ github.sha }} | cut -c1-7)
+            docker compose up -f ~/docker-compose.production.yaml -d
 
-            - name: Login to Docker Hub
-              uses: docker/login-action@v3
-              with:
-                username: ${{ env.DOCKER_USERNAME }}
-                password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
-
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Docker meta
-              id: meta
-              uses: docker/metadata-action@v3
-              with:
-                images: |
-                    ${{ env.DOCKER_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY_NAME }}
-                tags: |
-                    type=sha,prefix=,suffix=
-
-            - name: Build and push
-              uses: docker/build-push-action@v6
-              with:
-                context: .  # Change to "." if Dockerfile is in root
-                push: true
-                tags: ${{ steps.meta.outputs.tags }}
